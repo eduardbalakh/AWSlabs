@@ -1,7 +1,7 @@
 pipeline {
     parameters {
-        string(name: 'REGION', defaultValue: 'us-east-1', description: 'AWS region for CloudFormation deployment')
-        string(name: 'TEMPLATE_FILE_NAME', defaultValue: 'my-template.yaml', description: 'Name of CloudFormation template file')
+        string(name: 'REGION', defaultValue: 'eu-central-1', description: 'AWS region for CloudFormation deployment')
+        string(name: 'TEMPLATE_FILE_NAME', defaultValue: 'networks.yaml', description: 'Name of CloudFormation template file')
     }
 
     agent any
@@ -27,8 +27,8 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'aws-access-key', variable: 'AWS_ACCESS_KEY_ID'), string(credentialsId: 'aws-secret-key', variable: 'AWS_SECRET_ACCESS_KEY')]) {
                     git url: "https://github.com/${GITHUB_REPO}.git", credentialsId: 'github-token'
-                    sh "cp ${TEMPLATE_FILE} ${WORKSPACE}/template.yaml"
-                    sh "cp ${PARAMS_FILE} ${WORKSPACE}/params.json"
+                    sh "cp CloudFormation/${TEMPLATE_FILE} ${WORKSPACE}/template.yaml"
+                    sh "cp CloudFormation/${PARAMS_FILE} ${WORKSPACE}/params.json"
                 }
             }
         }
