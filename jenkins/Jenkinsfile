@@ -16,6 +16,10 @@ pipeline {
         PIPELINE_FILE = 'Jenkinsfile'
     }
 
+    tools {
+      awscli 'AWS CLI'
+    }
+
     stages {
         stage('Hello') {
             steps {
