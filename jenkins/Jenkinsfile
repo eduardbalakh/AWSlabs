@@ -17,7 +17,10 @@ pipeline {
 
     stages {
         stage('Hello') {
-            sh "echo HELLO WORLD"
+            steps {
+                sh "echo HELLO WORLD"
+            }
+
         }
 
         stage('Fetch Template') {
