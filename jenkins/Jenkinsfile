@@ -27,7 +27,7 @@ pipeline {
         stage('Fetch Template') {
             steps {
                 withCredentials([string(credentialsId: 'aws-access-key', variable: 'AWS_ACCESS_KEY_ID'), string(credentialsId: 'aws-secret-key', variable: 'AWS_SECRET_ACCESS_KEY')]) {
-                    git url: "https://github.com/${GITHUB_REPO}.git", credentialsId: 'Jenkins-token'
+                    git branch: 'main', url: "https://github.com/${GITHUB_REPO}.git", credentialsId: 'Jenkins-token'
                     sh "cp CloudFormation/${TEMPLATE_FILE} ${WORKSPACE}/template.yaml"
                     sh "cp CloudFormation/${PARAMS_FILE} ${WORKSPACE}/params.json"
                 }
