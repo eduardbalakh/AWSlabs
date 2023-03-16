@@ -62,4 +62,9 @@ pipeline {
         stage('Print Stack Outputs') {
             steps {
                 withCredentials([string(credentialsId: 'aws-access-key', variable: 'AWS_ACCESS_KEY_ID'), string(credentialsId: 'aws-secret-key', variable: 'AWS_SECRET_ACCESS_KEY')]) {
-                    sh "aws cloudformation describe-stacks --stack-name ${STACK_NAME} --query 'Stacks[].Outputs[]'
+                    sh "aws cloudformation describe-stacks --stack-name ${STACK_NAME} --query 'Stacks[].Outputs[]'"
+                }
+            }
+        }
+    }
+}
