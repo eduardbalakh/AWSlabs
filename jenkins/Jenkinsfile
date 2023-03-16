@@ -2,7 +2,7 @@ pipeline {
     parameters {
         string(name: 'REGION', defaultValue: 'eu-central-1', description: 'AWS region for CloudFormation deployment')
         string(name: 'TEMPLATE_FILE_NAME', defaultValue: 'networks.yaml', description: 'Name of CloudFormation template file')
-        string(name: 'GITHUB_REPO', defaultValue: 'eduardbalakh/AWSlabs.git', description: 'Repo with cloudformation templates')
+        string(name: 'GITHUB_REPO', defaultValue: 'eduardbalakh/AWSlabs', description: 'Repo with cloudformation templates')
     }
 
     agent any
