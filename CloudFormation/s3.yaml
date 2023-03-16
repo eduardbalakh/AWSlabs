@@ -1,0 +1,23 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Create S3 bucket
+
+Parameters:
+  BucketName:
+    Type: String
+    Default: "eduardbalakh-bucket-2367453"
+
+Resources:
+
+  BucketLab1:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketName: !Ref BucketName
+      VersioningConfiguration:
+        Status: "Enabled"
+
+
+
+Outputs:
+  MainBucketName:
+    Description: Name of the main bucket
+    Value: !Ref BucketLab1

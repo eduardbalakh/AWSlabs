@@ -1,0 +1,65 @@
+pipeline {
+    parameters {
+        string(name: 'REGION', defaultValue: 'us-east-1', description: 'AWS region for CloudFormation deployment')
+        string(name: 'TEMPLATE_FILE_NAME', defaultValue: 'my-template.yaml', description: 'Name of CloudFormation template file')
+    }
+
+    agent any
+
+    environment {
+        AWS_REGION = "${params.REGION}"
+        STACK_NAME = 'my-stack'
+        GITHUB_REPO = 'my-org/my-repo'
+        TEMPLATE_FILE = "${params.TEMPLATE_FILE_NAME}"
+        PARAMS_FILE = 'my-params.json'
+        PIPELINE_FILE = 'Jenkinsfile'
+    }
+
+    stages {
+        stage('Hello') {
+            sh "echo HELLO WORLD"
+        }
+
+        stage('Fetch Template') {
+            steps {
+                withCredentials([string(credentialsId: 'aws-access-key', variable: 'AWS_ACCESS_KEY_ID'), string(credentialsId: 'aws-secret-key', variable: 'AWS_SECRET_ACCESS_KEY')]) {
+                    git url: "https://github.com/${GITHUB_REPO}.git", credentialsId: 'github-token'
+                    sh "cp ${TEMPLATE_FILE} ${WORKSPACE}/template.yaml"
+                    sh "cp ${PARAMS_FILE} ${WORKSPACE}/params.json"
+                }
+            }
+        }
+
+        stage('Validate Template') {
+            steps {
+                sh "aws cloudformation validate-template --template-body file://${WORKSPACE}/template.yaml"
+            }
+        }
+
+        stage('Create Stack') {
+            steps {
+                withCredentials([string(credentialsId: 'aws-access-key', variable: 'AWS_ACCESS_KEY_ID'), string(credentialsId: 'aws-secret-key', variable: 'AWS_SECRET_ACCESS_KEY')]) {
+                    sh """
+                        aws cloudformation create-stack
+                        --stack-name ${STACK_NAME}
+                        --template-body file://${WORKSPACE}/template.yaml
+                        --parameters file://${WORKSPACE}/params.json
+                        --capabilities CAPABILITY_NAMED_IAM
+                        --region ${AWS_REGION}
+                    """
+                }
+            }
+        }
+
+        stage('Wait for Stack Creation') {
+            steps {
+                withCredentials([string(credentialsId: 'aws-access-key', variable: 'AWS_ACCESS_KEY_ID'), string(credentialsId: 'aws-secret-key', variable: 'AWS_SECRET_ACCESS_KEY')]) {
+                    sh "aws cloudformation wait stack-create-complete --stack-name ${STACK_NAME} --region ${AWS_REGION}"
+                }
+            }
+        }
+
+        stage('Print Stack Outputs') {
+            steps {
+                withCredentials([string(credentialsId: 'aws-access-key', variable: 'AWS_ACCESS_KEY_ID'), string(credentialsId: 'aws-secret-key', variable: 'AWS_SECRET_ACCESS_KEY')]) {
+                    sh "aws cloudformation describe-stacks --stack-name ${STACK_NAME} --query 'Stacks[].Outputs[]'
