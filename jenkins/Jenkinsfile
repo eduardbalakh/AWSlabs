@@ -71,9 +71,11 @@ pipeline {
             }
         }
 
-        onFailure {
-            steps {
-                sh "aws cloudformation delete-stack --stack-name ${STACK_NAME}"
+        post {
+            onFailure {
+                steps {
+                    sh "aws cloudformation delete-stack --stack-name ${STACK_NAME}"
+                }
             }
         }
     }
