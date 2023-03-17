@@ -44,11 +44,11 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'aws-access-key', variable: 'AWS_ACCESS_KEY_ID'), string(credentialsId: 'aws-secret-key', variable: 'AWS_SECRET_ACCESS_KEY')]) {
                     sh """
-                        aws cloudformation create-stack
-                        --stack-name ${STACK_NAME}
-                        --template-body file://${WORKSPACE}/template.yaml
-                        --parameters file://${WORKSPACE}/params.json
-                        --capabilities CAPABILITY_NAMED_IAM
+                        aws cloudformation create-stack \
+                        --stack-name ${STACK_NAME} \
+                        --template-body file://${WORKSPACE}/template.yaml \
+                        --parameters file://${WORKSPACE}/params.json \
+                        --capabilities CAPABILITY_NAMED_IAM \
                         --region ${AWS_REGION}
                     """
                 }
