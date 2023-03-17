@@ -70,5 +70,20 @@ pipeline {
                 }
             }
         }
+
+        stage('Cleanup on Failure') {
+            when {
+                anyOf {
+                    failed()
+                    aborted()
+                    unstable()
+                }
+            }
+            steps {
+                withCredentials([string(credentialsId: 'aws-access-key', variable: 'AWS_ACCESS_KEY_ID'), string(credentialsId: 'aws-secret-key', variable: 'AWS_SECRET_ACCESS_KEY')]) {
+                    sh "aws cloudformation delete-stack --stack-name ${STACK_NAME}"
+                }
+            }
+        }
     }
 }
