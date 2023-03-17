@@ -40,7 +40,6 @@ pipeline {
             }
         }
 
-        try {
 
         stage('Create Stack') {
             steps {
@@ -72,12 +71,11 @@ pipeline {
                 }
             }
         }
-        } catch(err) {
-            stage('Clean env') {
-                steps {
-                    sh "aws cloudformation delete-stack --stack-name ${STACK_NAME}"
-                }
-            }
+    }
+
+    post {
+        failure {
+            sh "aws cloudformation delete-stack --stack-name ${STACK_NAME}"
         }
     }
 }
