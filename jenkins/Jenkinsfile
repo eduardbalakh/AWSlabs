@@ -40,7 +40,7 @@ pipeline {
 
         stage('Validate Template') {
             steps {
-                sh "aws cloudformation validate-template --template-body file://${WORKSPACE}/template.yaml"
+                sh "/usr/local/bin/aws cloudformation validate-template --template-body file://${WORKSPACE}/template.yaml"
             }
         }
 
