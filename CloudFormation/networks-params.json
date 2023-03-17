@@ -2,5 +2,9 @@
   {
     "ParameterKey": "VPCName",
     "ParameterValue": "MYVPC"
+  },
+  {
+    "ParameterKey": "AvailabilityZone",
+    "ParameterValue": "eu-central-1"
   }
 ]
