@@ -5,6 +5,6 @@
   },
   {
     "ParameterKey": "AvailabilityZone",
-    "ParameterValue": "eu-central-1"
+    "ParameterValue": "eu-central-1a"
   }
 ]
