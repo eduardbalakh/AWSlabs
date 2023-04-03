@@ -9,11 +9,12 @@ pipeline {
 
     environment {
         AWS_REGION = "${params.REGION}"
-        STACK_NAME = 'my-stack'
+        STACK_NAME = "${params.stack_name}"
         GITHUB_REPO = "${params.GITHUB_REPO}"
         TEMPLATE_FILE = "${params.TEMPLATE_FILE_NAME}"
         PARAMS_FILE = "${params.TEMPLATE_FILE_NAME}-params.json"
         PIPELINE_FILE = 'Jenkinsfile'
+        PARAMS_STRING = "${params.parameters}"
     }
 
     stages {
@@ -41,7 +42,10 @@ pipeline {
         }
 
 
-        stage('Create Stack') {
+        stage('Create Stack with default parameters') {
+            when {
+                expression { params.PARAMS_STRING == '' }
+            }
             steps {
                 withCredentials([string(credentialsId: 'aws-access-key', variable: 'AWS_ACCESS_KEY_ID'), string(credentialsId: 'aws-secret-key', variable: 'AWS_SECRET_ACCESS_KEY')]) {
                 sh """
@@ -66,6 +70,35 @@ pipeline {
                 }
             }
         }
+
+        stage('Create Stack with provided parameters') {
+                    when {
+                        expression { params.PARAMS_STRING != '' }
+                    }
+                    steps {
+                        withCredentials([string(credentialsId: 'aws-access-key', variable: 'AWS_ACCESS_KEY_ID'), string(credentialsId: 'aws-secret-key', variable: 'AWS_SECRET_ACCESS_KEY')]) {
+                        sh """
+                            if aws cloudformation describe-stacks --stack-name my-stack >/dev/null 2>&1; then
+                                echo "The stack already exists."
+                                aws cloudformation update-stack \
+                                   --stack-name ${STACK_NAME} \
+                                   --template-body file://${WORKSPACE}/template.yaml \
+                                   --parameters file://${WORKSPACE}/params.json \
+                                   --capabilities CAPABILITY_NAMED_IAM \
+                                   --region ${AWS_REGION}
+                            else
+                                echo "The stack does not exist."
+                                aws cloudformation create-stack \
+                                     --stack-name ${STACK_NAME} \
+                                     --template-body file://${WORKSPACE}/template.yaml \
+                                     --parameters file://${WORKSPACE}/params.json \
+                                     --capabilities CAPABILITY_NAMED_IAM \
+                                     --region ${AWS_REGION}
+                            fi
+                            """
+                        }
+                    }
+                }
 
         stage('Wait for Stack Creation') {
             steps {
