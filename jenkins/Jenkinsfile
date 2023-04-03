@@ -4,6 +4,7 @@ pipeline {
         string(name: 'TEMPLATE_FILE_NAME', defaultValue: 'networks', description: 'Name of CloudFormation template file')
         string(name: 'GITHUB_REPO', defaultValue: 'eduardbalakh/AWSlabs', description: 'Repo with cloudformation templates')
         string(name: 'AWS_CLOUDFORMATION_PARAMETERS', defaultValue: '', description: 'Optional. When no value provided default params.yaml will be used')
+        string(name: 'Stack name', defaultValue: 'my-stack', description: 'Name of CloudFormation in AWS')
     }
 
     agent any
