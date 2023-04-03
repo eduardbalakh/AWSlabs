@@ -3,6 +3,7 @@ pipeline {
         string(name: 'REGION', defaultValue: 'eu-central-1', description: 'AWS region for CloudFormation deployment')
         string(name: 'TEMPLATE_FILE_NAME', defaultValue: 'networks', description: 'Name of CloudFormation template file')
         string(name: 'GITHUB_REPO', defaultValue: 'eduardbalakh/AWSlabs', description: 'Repo with cloudformation templates')
+        string(name: 'AWS_CLOUDFORMATION_PARAMETERS', defaultValue: '', description: 'Optional. When no value provided default params.yaml will be used')
     }
 
     agent any
@@ -49,7 +50,7 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'aws-access-key', variable: 'AWS_ACCESS_KEY_ID'), string(credentialsId: 'aws-secret-key', variable: 'AWS_SECRET_ACCESS_KEY')]) {
                 sh """
-                    if aws cloudformation describe-stacks --stack-name my-stack >/dev/null 2>&1; then
+                    if aws cloudformation describe-stacks --stack-name ${STACK_NAME} >/dev/null 2>&1; then
                         echo "The stack already exists."
                         aws cloudformation update-stack \
                            --stack-name ${STACK_NAME} \
@@ -78,12 +79,12 @@ pipeline {
                     steps {
                         withCredentials([string(credentialsId: 'aws-access-key', variable: 'AWS_ACCESS_KEY_ID'), string(credentialsId: 'aws-secret-key', variable: 'AWS_SECRET_ACCESS_KEY')]) {
                         sh """
-                            if aws cloudformation describe-stacks --stack-name my-stack >/dev/null 2>&1; then
+                            if aws cloudformation describe-stacks --stack-name ${STACK_NAME} >/dev/null 2>&1; then
                                 echo "The stack already exists."
                                 aws cloudformation update-stack \
                                    --stack-name ${STACK_NAME} \
                                    --template-body file://${WORKSPACE}/template.yaml \
-                                   --parameters file://${WORKSPACE}/params.json \
+                                   --parameters ${PARAMS_STRING} \
                                    --capabilities CAPABILITY_NAMED_IAM \
                                    --region ${AWS_REGION}
                             else
@@ -91,7 +92,7 @@ pipeline {
                                 aws cloudformation create-stack \
                                      --stack-name ${STACK_NAME} \
                                      --template-body file://${WORKSPACE}/template.yaml \
-                                     --parameters file://${WORKSPACE}/params.json \
+                                     --parameters ${PARAMS_STRING} \
                                      --capabilities CAPABILITY_NAMED_IAM \
                                      --region ${AWS_REGION}
                             fi
