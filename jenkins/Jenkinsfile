@@ -42,6 +42,7 @@ pipeline {
                       cp "${PARAMS_PATH}" ${WORKSPACE}/params.json
                     fi
                     '''
+                    sh 'cat params.json'
                 }
             }
         }
