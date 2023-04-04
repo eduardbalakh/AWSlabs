@@ -4,19 +4,21 @@ pipeline {
         string(name: 'TEMPLATE_FILE_NAME', defaultValue: 'networks', description: 'Name of CloudFormation template file')
         string(name: 'GITHUB_REPO', defaultValue: 'eduardbalakh/AWSlabs', description: 'Repo with cloudformation templates')
         string(name: 'AWS_CLOUDFORMATION_PARAMETERS', defaultValue: '', description: 'Optional. When no value provided default params.yaml will be used')
-        string(name: 'Stack name', defaultValue: 'my-stack', description: 'Name of CloudFormation in AWS')
+        string(name: 'Stack_name', defaultValue: 'my-stack', description: 'Name of CloudFormation in AWS')
+        string(name: 'Path_PARAMS', defaultValue: '/params.json', description: 'Name of CloudFormation in AWS')
     }
 
     agent any
 
     environment {
         AWS_REGION = "${params.REGION}"
-        STACK_NAME = "${params.stack_name}"
+        STACK_NAME = "${params.Stack_name}"
         GITHUB_REPO = "${params.GITHUB_REPO}"
         TEMPLATE_FILE = "${params.TEMPLATE_FILE_NAME}"
         PARAMS_FILE = "${params.TEMPLATE_FILE_NAME}-params.json"
         PIPELINE_FILE = 'Jenkinsfile'
         PARAMS_STRING = "${params.parameters}"
+        PARAMS_PATH = "${params.Path_PARAMS}"
     }
 
     stages {
@@ -32,7 +34,14 @@ pipeline {
                 withCredentials([string(credentialsId: 'aws-access-key', variable: 'AWS_ACCESS_KEY_ID'), string(credentialsId: 'aws-secret-key', variable: 'AWS_SECRET_ACCESS_KEY')]) {
                     git branch: 'main', url: "https://github.com/${GITHUB_REPO}.git", credentialsId: 'Jenkins-token'
                     sh "cp CloudFormation/${TEMPLATE_FILE}.yaml ${WORKSPACE}/template.yaml"
-                    sh "cp CloudFormation/${PARAMS_FILE} ${WORKSPACE}/params.json"
+                    //sh "cp CloudFormation/${PARAMS_FILE} ${WORKSPACE}/params.json"
+                    sh '''
+                    if [ -z "${PARAMS_PATH}" ]; then
+                      echo "Parameter PARAMS_PATH is empty"
+                    else
+                      cp "${PARAMS_PATH}" ${WORKSPACE}/params.json
+                    fi
+                    '''
                 }
             }
         }
