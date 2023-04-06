@@ -72,7 +72,7 @@ pipeline {
                         echo "The stack does not exist."
                         aws cloudformation create-stack \
                              --stack-name ${STACK_NAME} \
-                             --template-body file://${WORKSPACE}/template.yaml \
+                             --template-url ${TEMPLATE_URL} \
                              --parameters file://${WORKSPACE}/params.json \
                              --capabilities CAPABILITY_NAMED_IAM \
                              --region ${AWS_REGION}
