@@ -4,7 +4,7 @@ Description: Create S3 bucket
 Parameters:
   BucketName:
     Type: String
-    Default: "eduardbalakh-bucket-2367453"
+    Default: "kjdcsjkcds"
 
 Resources:
 

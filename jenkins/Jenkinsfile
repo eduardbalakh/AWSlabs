@@ -3,9 +3,9 @@ pipeline {
         string(name: 'REGION', defaultValue: 'eu-central-1', description: 'AWS region for CloudFormation deployment')
         string(name: 'TEMPLATE_FILE_NAME', defaultValue: 'networks', description: 'Name of CloudFormation template file')
         string(name: 'GITHUB_REPO', defaultValue: 'eduardbalakh/AWSlabs', description: 'Repo with cloudformation templates')
-        string(name: 'AWS_CLOUDFORMATION_PARAMETERS', defaultValue: '', description: 'Optional. When no value provided default params.yaml will be used')
         string(name: 'Stack_name', defaultValue: 'my-stack', description: 'Name of CloudFormation in AWS')
-        string(name: 'Path_PARAMS', defaultValue: '/params.json', description: 'Name of CloudFormation in AWS')
+        string(name: 'Path_PARAMS', defaultValue: '', description: 'Name of CloudFormation in AWS')
+        string(name: 'Path_to_template', defaultValue: 'ads-service/', description: 'Path to template in S3 bucket starting from https://s3.amazonaws.com/....')
     }
 
     agent any
@@ -19,6 +19,8 @@ pipeline {
         PIPELINE_FILE = 'Jenkinsfile'
         PARAMS_STRING = "${params.parameters}"
         PARAMS_PATH = "${params.Path_PARAMS}"
+        DEFAULT_PATH_TO_S3 = 'https://s3.amazonaws.com/bucket-for-templates-54654645/'
+        TEMPLATE_URL = "${Path_to_template}"
     }
 
     stages {
@@ -55,9 +57,6 @@ pipeline {
 
 
         stage('Create Stack with default parameters') {
-            when {
-                expression { params.PARAMS_STRING == '' }
-            }
             steps {
                 withCredentials([string(credentialsId: 'aws-access-key', variable: 'AWS_ACCESS_KEY_ID'), string(credentialsId: 'aws-secret-key', variable: 'AWS_SECRET_ACCESS_KEY')]) {
                 sh """
@@ -65,10 +64,10 @@ pipeline {
                         echo "The stack already exists."
                         aws cloudformation update-stack \
                            --stack-name ${STACK_NAME} \
-                           --template-body file://${WORKSPACE}/template.yaml \
+                           --template-url ${TEMPLATE_URL} \
                            --parameters file://${WORKSPACE}/params.json \
                            --capabilities CAPABILITY_NAMED_IAM \
-                           --region ${AWS_REGION}
+                           --region ${AWS_REGION} || true
                     else
                         echo "The stack does not exist."
                         aws cloudformation create-stack \
@@ -82,35 +81,6 @@ pipeline {
                 }
             }
         }
-
-        stage('Create Stack with provided parameters') {
-                    when {
-                        expression { params.PARAMS_STRING != '' }
-                    }
-                    steps {
-                        withCredentials([string(credentialsId: 'aws-access-key', variable: 'AWS_ACCESS_KEY_ID'), string(credentialsId: 'aws-secret-key', variable: 'AWS_SECRET_ACCESS_KEY')]) {
-                        sh """
-                            if aws cloudformation describe-stacks --stack-name ${STACK_NAME} >/dev/null 2>&1; then
-                                echo "The stack already exists."
-                                aws cloudformation update-stack \
-                                   --stack-name ${STACK_NAME} \
-                                   --template-body file://${WORKSPACE}/template.yaml \
-                                   --parameters ${PARAMS_STRING} \
-                                   --capabilities CAPABILITY_NAMED_IAM \
-                                   --region ${AWS_REGION}
-                            else
-                                echo "The stack does not exist."
-                                aws cloudformation create-stack \
-                                     --stack-name ${STACK_NAME} \
-                                     --template-body file://${WORKSPACE}/template.yaml \
-                                     --parameters ${PARAMS_STRING} \
-                                     --capabilities CAPABILITY_NAMED_IAM \
-                                     --region ${AWS_REGION}
-                            fi
-                            """
-                        }
-                    }
-                }
 
         stage('Wait for Stack Creation') {
             steps {
